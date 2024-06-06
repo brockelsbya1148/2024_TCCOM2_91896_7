@@ -46,34 +46,27 @@ def string_checker(question, valid_responses):
 
 
 # Unit dictionary
-unit_list = ["kilograms", "kg", "grams", "g", "milligrams", "mg", "litres", "l", "millilitres", "ml", "cups", "c",
-             "tablespoons", "tbsp", "teaspoons", "tsp"]
+unit_dict = {
+    "kilograms": "kg", "kg": "kg",
+    "grams": "g", "g": "g",
+    "milligrams": "mg", "mg": "mg",
+    "litres": "l", "l": "l",
+    "millilitres": "ml", "ml": "ml",
+    "cups": "c", "c": "c",
+    "tablespoons": "tbsp", "tbsp": "tbsp",
+    "teaspoons": "tsp", "tsp": "tsp"
+}
+
 
 # Main routine
 ing_name = not_blank("What is the name of the ingredient? ")
-ing_unit = string_checker("What unit of measurement does the ingredient use? ", unit_list)
-ing_amount = num_check("How many of this unit? ", "Please enter only a number more than 0", float)
+ing_unit = string_checker("What unit of measurement does the ingredient use? (or none if no units, e.g. eggs) ",
+                          unit_dict.keys())
+ing_amount = num_check("How many of this unit? ", "Please enter a number more than 0 (no fractions)", float)
 
 # unit conversion
-if ing_unit == "kilograms":
-    ing_unit = "kg"
-elif ing_unit == "grams":
-    ing_unit = "g"
-elif ing_unit == "milligrams":
-    ing_unit = "mg"
-elif ing_unit == "litre":
-    ing_unit = "l"
-elif ing_unit == "millilitre":
-    ing_unit = "ml"
-elif ing_unit == "cups":
-    ing_unit = "c"
-elif ing_unit == "tablespoons":
-    ing_unit = "tbsp"
-elif ing_unit == "teaspoons":
-    ing_unit = "tsp"
-else:
-    ing_unit = ing_unit
+ing_unit = unit_dict[ing_unit]
 
 # printing
 print("\n**** Ingredient ****\n")
-print(f"{ing_name}\n", f"{ing_amount}{ing_unit}")
+print(f"{ing_name}\n", f"{ing_amount} {ing_unit}")
