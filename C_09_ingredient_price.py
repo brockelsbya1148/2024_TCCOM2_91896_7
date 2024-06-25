@@ -25,7 +25,7 @@ def not_blank(question):
 
         # If response is blank, output error
         if response == "":
-            print("Cannot be blank\n")
+            print("Cannot be blank")
         else:
             return response
 
@@ -130,7 +130,7 @@ for ing_name, ing_amount, ing_unit in ingredients:
             ing_amount = int(ing_amount)
         print(f"{ing_name}: {ing_amount}")
 
-for item in ingredients:
+for ing_name, ing_amount, ing_unit in ingredients:
     store_unit = string_checker(f"\nWhat unit of measurement do you buy {ing_name} in? (if no units say none again) ",
                                 unit_dict.keys())
     store_amount = num_check("How many of this unit? ", "Please enter a number more than 0 (no fractions)", float)
