@@ -46,16 +46,10 @@ def string_checker(question, valid_responses):
         print(error)
 
 
-# Converts units into grams
-def convert_g(val: float, unit_in: str, unit_out: str) -> float:
-    conversion_grams = {'mg': 0.001, 'g': 1, 'kg': 1000}
-    return val * conversion_grams[unit_in] / conversion_grams[unit_out]
-
-
-# Converts units into millilitres
-def convert_ml(val: float, unit_in: str, unit_out: str) -> float:
-    conversion_millilitres = {'ml': 1, 'l': 1000, 'c': 240, 'tbsp': 15, 'tsp': 5}
-    return val * conversion_millilitres[unit_in] / conversion_millilitres[unit_out]
+# Converts units into g and ml
+def convert_unit(val: float, unit_in: str) -> float:
+    conversion_units = {'mg': 0.001, 'g': 1, 'kg': 1000, 'ml': 1, 'l': 1000, 'c': 240, 'tbsp': 15, 'tsp': 5}
+    return val * conversion_units[unit_in]
 
 
 # Main Routine Starts Here
@@ -102,13 +96,42 @@ while True:
         break
     ing_unit = string_checker("What unit of measurement does the ingredient use? (or none if no units, e.g. eggs) ",
                               unit_dict.keys())
-    ing_amount = num_check(f"How many {ing_unit}? ", "Please enter a number more than 0 (no fractions)", float)
+    if ing_unit == "none":
+        ing_amount = num_check(f"How many? ", "Please enter a number more than 0 (no fractions)", float)
+    else:
+        ing_amount = num_check(f"How many {ing_unit}? ", "Please enter a number more than 0 (no fractions)", float)
 
     # Unit conversion
     ing_unit = unit_dict[ing_unit]
 
     # Add ingredient to the list
     ingredients.append((ing_name, ing_amount, ing_unit))
+
+print()
+
+# Find out store prices for ingredients
+for ing_name, ing_amount, ing_unit in ingredients:
+    store_unit = string_checker(f"\nWhat unit of measurement do you buy {ing_name} in? (if no units say none again) ",
+                                unit_dict.keys())
+    if store_unit == "none":
+        store_amount = num_check(f"How many? ", "Please enter a number more than 0 (no fractions)", float)
+    else:
+        store_amount = num_check(f"How many {store_unit}? ", "Please enter a number more than 0 (no fractions)", float)
+    store_cost = num_check("How much does it cost? $", "Please enter a price", float)
+
+    # Unit conversion
+    store_unit = unit_dict[store_unit]
+
+    # Change name of ing_name, so we can use it when calculating the recipe cost
+    store_name = ing_name
+
+    # Remove decimals on whole numbers
+    if store_amount == int(store_amount):
+        store_amount = int(store_amount)
+
+    # Add ingredient to the list
+    store_ingredients.append((store_name, store_amount, store_unit, store_cost))
+
 
 # *** Print area ***
 
@@ -121,67 +144,49 @@ print(f"Servings: {recipe_servings}")
 print("\n*** Ingredients ***\n")
 
 for ing_name, ing_amount, ing_unit in ingredients:
-    if ing_unit in ["g", "mg", "kg"]:
-        new_amount = convert_g(ing_amount, ing_unit, 'g')
+    # Remove decimal from whole numbers
+    if ing_amount == int(ing_amount):
+        ing_amount = int(ing_amount)
 
-        # if it's a whole number, make it an int
-        if new_amount == int(new_amount):
-            new_amount = int(new_amount)
-        # print list
-        print(f"{ing_name}: {new_amount}g")
+    # Print
+    print(f"{ing_name}: {ing_amount}{ing_unit}")
 
-    elif ing_unit in ["ml", "l", "c", "tbsp", "tsp"]:
+# Print store-bought ingredients and their prices
+print("\n*** Ingredient Prices ***\n")
+for store_name, store_amount, store_unit, store_cost in store_ingredients:
+    print(f"{store_name}: ${store_cost:.2f} for {store_amount}{store_unit}")
 
-        new_amount = convert_ml(ing_amount, ing_unit, 'ml')
+# Calculate total cost for store-bought ingredients
+total_cost_store = sum(store_cost for _, _, _, store_cost in store_ingredients)
+print(f"\n-- Total cost for ingredients from store: ${total_cost_store:.2f} --")
 
-        # if it's a whole number, make it an int
-        if new_amount == int(new_amount):
-            new_amount = int(new_amount)
-        # print list
-        print(f"{ing_name}: {new_amount}mL")
+# ** Calculate cost per unit of each ingredient in the recipe **
 
-    else:
-        if ing_amount == int(ing_amount):
-            ing_amount = int(ing_amount)
-        print(f"{ing_name}: {ing_amount}")
+total_cost = 0  # Make total cost counter
 
+print("\n*** Cost per Ingredient ***\n")
 for ing_name, ing_amount, ing_unit in ingredients:
-    store_unit = string_checker(f"\nWhat unit of measurement do you buy {ing_name} in? (if no units say none again) ",
-                                unit_dict.keys())
-    store_amount = num_check(f"How many {ing_unit}? ", "Please enter a number more than 0 (no fractions)", float)
-    store_cost = num_check("How much does it cost? $", "Please enter a price", float)
+    for store_name, store_amount, store_unit, store_cost in store_ingredients:
+        if ing_name == store_name:
+            price_conv_amount = convert_unit(store_amount, store_unit)
+            ing_amount_base = convert_unit(ing_amount, ing_unit)
 
-    # Unit conversion
-    store_unit = unit_dict[store_unit]
+            # If amount is a whole number, remove decimal place
+            if ing_amount == int(ing_amount):
+                ing_amount = int(ing_amount)
 
-    # Add ingredient to the list
-    store_ingredients.append((ing_name, store_amount, store_unit, store_cost))
+            # Calculate
+            cost_per_unit = store_cost / price_conv_amount
+            ing_cost = cost_per_unit * ing_amount_base
 
-print("\n**** Ingredient Prices ****")
+            print(f"{ing_name}: {ing_amount}{ing_unit} - Cost: ${ing_cost:.2f}")
 
-for ing_name, store_amount, store_unit, store_cost in store_ingredients:
-    # print ingredients and how much they cost to buy
-    print(f"\n{ing_name}: ${store_cost:.2f} for {store_amount}{store_unit}")
+            # Add to total cost
+            total_cost += ing_cost
 
-    # convert units into grams and millilitres for easier calculation
-    if store_unit in ["g", "mg", "kg"]:
-        price_conv_amount = convert_g(store_amount, store_unit, 'g')
+# Calculate cost per serving
+per_serve = total_cost / recipe_servings
 
-        # if it's a whole number, make it an int
-        if price_conv_amount == int(price_conv_amount):
-            price_conv_amount = int(price_conv_amount)
-
-    elif store_amount in ["ml", "l", "c", "tbsp", "tsp"]:
-        price_conv_amount = convert_ml(store_amount, store_unit, 'ml')
-
-        # if it's a whole number, make it an int
-        if price_conv_amount == int(price_conv_amount):
-            price_conv_amount = int(price_conv_amount)
-
-    else:
-        if store_amount == int(store_amount):
-            store_unit = int(store_amount)
-
-# Calculate total cost
-total_price = sum(store_cost for _, _, _, store_cost in store_ingredients)
-print(f"\nTotal cost for ingredients: ${total_price:.2f}")
+# Print final costs
+print(f"\n-- Total cost for recipe: ${total_cost:.2f} --")
+print(f"-- Cost per serving: ${per_serve:.2f} --")
