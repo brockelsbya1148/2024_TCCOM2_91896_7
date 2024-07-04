@@ -1,17 +1,21 @@
 # Functions go here
+import pandas
 
-# Checks that input is either a float or an integer that is more than zero
+
+# Checks that input is either a float or an integer that is more than zero and less than 100
 def num_check(question, error, num_type):
     valid = False
     while not valid:
 
         try:
-            response = num_type(input(question))
+            response = input(question)
+            response_num = num_type(response)
 
-            if response <= 0:
+            if len(response) >= 100 or response_num <= 0:
                 print(error)
+
             else:
-                return response
+                return response_num
 
         except ValueError:
             print(error)
@@ -49,7 +53,10 @@ def string_checker(question, valid_responses):
 # Converts units into g and ml
 def convert_unit(val: float, unit_in: str) -> float:
     conversion_units = {'mg': 0.001, 'g': 1, 'kg': 1000, 'ml': 1, 'l': 1000, 'c': 240, 'tbsp': 15, 'tsp': 5}
-    return val * conversion_units[unit_in]
+    if unit_in in conversion_units:
+        return val * conversion_units[unit_in]
+    else:
+        return val  # No conversion needed if no unit
 
 
 # Main Routine Starts Here
@@ -69,7 +76,7 @@ unit_dict = {
     "cups": "c", "c": "c",
     "tablespoons": "tbsp", "tbsp": "tbsp",
     "teaspoons": "tsp", "tsp": "tsp",
-    "none": ""
+    "": ""
 }
 
 # Ask users if they want instructions or not
@@ -78,11 +85,45 @@ instruction_yn = string_checker("Do you want to see the instructions ", yes_no.k
 instruction_yn = yes_no[instruction_yn]
 # print instructions
 if instruction_yn == "yes":
-    print("\nInstructions go here")
+    print("""
+    Welcome to the Recipe Cost Calculator! This tool helps you determine the total cost of making a recipe and the cost
+    per serving. Follow these steps to use the calculator:
+
+    1. Enter the recipe name:
+       - Type the name of your recipe when asked.
+
+    2. Enter the number of servings:
+       - Provide the number of servings your recipe makes. This should be a positive integer.
+
+    3. Enter ingredients:
+       - For each ingredient in your recipe:
+         - Enter the ingredient name.
+         - Specify the unit of measurement (e.g., grams, cups) or leave it blank if the ingredient has no specific unit
+         (e.g., eggs).
+         - Provide the amount of the ingredient needed. This should be a positive number.
+         - To stop entering ingredients, type "xxx" when asked for the ingredient name.
+
+    4. Enter store prices for ingredients:
+       - For each ingredient you entered:
+         - Specify the unit of measurement in which you buy the ingredient from the store (e.g., grams, kilograms,
+         liters) or type "none" if there is no specific unit.
+         - Provide the quantity of the ingredient you buy from the store in that unit. This should be a positive number.
+         - Enter the cost of that quantity of the ingredient. This should be a positive number.
+
+    5. Review the results:
+       - The calculator will display:
+         - The name of your recipe and the number of servings.
+         - A list of all ingredients with their quantities.
+         - The cost of each store-bought ingredient and the quantity purchased.
+         - The total cost for all store-bought ingredients.
+         - The cost per unit of each ingredient used in the recipe.
+         - The total cost for making the recipe.
+         - The cost per serving of the recipe.
+    """)
 
 # Find name of recipe and how many servings
 recipe_name = not_blank("\nWhat is the name of your recipe? ")
-recipe_servings = num_check("How many servings does it make? ", "Please enter a valid amount of servings", int)
+recipe_servings = num_check("How many servings does it make? ", "Please enter a reasonable amount of servings", int)
 
 # *** Ask user for ingredients ***
 
@@ -94,42 +135,38 @@ while True:
     ing_name = not_blank("\nWhat is the name of your ingredient? (xxx to exit) ")
     if ing_name.lower() == "xxx":
         break
-    ing_unit = string_checker("What unit of measurement does the ingredient use? (or none if no units, e.g. eggs) ",
-                              unit_dict.keys())
-    if ing_unit == "none":
-        ing_amount = num_check(f"How many? ", "Please enter a number more than 0 (no fractions)", float)
+    ing_unit = string_checker("What unit of measurement does the ingredient use? (or leave blank if no units are "
+                              "required, e.g. eggs) ", unit_dict.keys())
+    if ing_unit == "":
+        ing_amount = num_check(f"How many? ", "Please enter a number more than 0 and less than 100 (no fractions)",
+                               float)
     else:
-        ing_amount = num_check(f"How many {ing_unit}? ", "Please enter a number more than 0 (no fractions)", float)
+        ing_amount = num_check(f"How many {ing_unit}? ", "Please enter a number more than 0 and less than "
+                                                         "100 (no fractions)", float)
 
-    # Unit conversion
-    ing_unit = unit_dict[ing_unit]
-
-    # Add ingredient to the list
-    ingredients.append((ing_name, ing_amount, ing_unit))
-
-print()
-
-# Find out store prices for ingredients
-for ing_name, ing_amount, ing_unit in ingredients:
-    store_unit = string_checker(f"\nWhat unit of measurement do you buy {ing_name} in? (if no units say none again) ",
+    store_unit = string_checker(f"\nWhat unit of measurement do you buy {ing_name} in? (leave blank if no units) ",
                                 unit_dict.keys())
     if store_unit == "none":
-        store_amount = num_check(f"How many? ", "Please enter a number more than 0 (no fractions)", float)
+        store_amount = num_check(f"How many? ", "Please enter a number more than 0 and less than 100(no fractions)",
+                                 float)
     else:
-        store_amount = num_check(f"How many {store_unit}? ", "Please enter a number more than 0 (no fractions)", float)
+        store_amount = num_check(f"How many {store_unit}? ", "Please enter a number more than 0 and less than 100 "
+                                                             "(no fractions)", float)
     store_cost = num_check("How much does it cost? $", "Please enter a price", float)
-
-    # Unit conversion
-    store_unit = unit_dict[store_unit]
-
-    # Change name of ing_name, so we can use it when calculating the recipe cost
-    store_name = ing_name
 
     # Remove decimals on whole numbers
     if store_amount == int(store_amount):
         store_amount = int(store_amount)
 
+    # Unit conversion
+    ing_unit = unit_dict[ing_unit]
+    store_unit = unit_dict[store_unit]
+
+    # Change name of ing_name, so we can use it when calculating the recipe cost
+    store_name = ing_name
+
     # Add ingredient to the list
+    ingredients.append((ing_name, ing_amount, ing_unit))
     store_ingredients.append((store_name, store_amount, store_unit, store_cost))
 
 
