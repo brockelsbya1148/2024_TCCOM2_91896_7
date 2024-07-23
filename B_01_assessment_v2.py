@@ -86,39 +86,37 @@ instruction_yn = yes_no[instruction_yn]
 # print instructions
 if instruction_yn == "yes":
     print("""
-    Welcome to the Recipe Cost Calculator! This tool helps you determine the total cost of making a recipe and the cost
-    per serving. Follow these steps to use the calculator:
+    Welcome to the Recipe Cost Calculator!
+    This tool helps you determine the total cost of making a recipe and the cost per serving. Follow these steps to use the calculator:
 
-    1. Enter the recipe name:
-       - Type the name of your recipe when asked.
+    1. Enter the Recipe Name:
+        - Type the name of your recipe when prompted.
+    
+    2. Enter the Number of Servings:
+        - Provide the number of servings your recipe makes (positive integer).
+    
+    3. Enter Ingredients:
+        - For each ingredient:
+            - Enter the ingredient name.
+            - Specify the unit of measurement (e.g., grams, cups) or leave it blank if the ingredient has no specific unit (e.g., eggs).
+            - Provide the amount needed (positive number).
+            - To stop entering ingredients, type "xxx" when asked for the ingredient name.
 
-    2. Enter the number of servings:
-       - Provide the number of servings your recipe makes. This should be a positive integer.
-
-    3. Enter ingredients:
-       - For each ingredient in your recipe:
-         - Enter the ingredient name.
-         - Specify the unit of measurement (e.g., grams, cups) or leave it blank if the ingredient has no specific unit
-         (e.g., eggs).
-         - Provide the amount of the ingredient needed. This should be a positive number.
-         - To stop entering ingredients, type "xxx" when asked for the ingredient name.
-
-    4. Enter store prices for ingredients:
-       - For each ingredient you entered:
-         - Specify the unit of measurement in which you buy the ingredient from the store (e.g., grams, kilograms,
-         liters) or type "none" if there is no specific unit.
-         - Provide the quantity of the ingredient you buy from the store in that unit. This should be a positive number.
-         - Enter the cost of that quantity of the ingredient. This should be a positive number.
-
-    5. Review the results:
-       - The calculator will display:
-         - The name of your recipe and the number of servings.
-         - A list of all ingredients with their quantities.
-         - The cost of each store-bought ingredient and the quantity purchased.
-         - The total cost for all store-bought ingredients.
-         - The cost per unit of each ingredient used in the recipe.
-         - The total cost for making the recipe.
-         - The cost per serving of the recipe.
+    4. Enter Store Prices:
+        - For each ingredient:
+            - Specify the unit of measurement in which you buy the ingredient (e.g., grams, kilograms, liters) or leave it blank if there is no specific unit.
+            - Provide the quantity bought from the store (positive number).
+            - Enter the cost of that quantity (positive number).
+    
+    5. Review the Results:
+        - The calculator will display:
+            - The name of your recipe and the number of servings.
+            - A list of all ingredients with their quantities.
+            - The cost of each store-bought ingredient and the quantity purchased.
+            - The total cost for all store-bought ingredients.
+            - The cost per unit of each ingredient used in the recipe.
+            - The total cost for making the recipe.
+            - The cost per serving of the recipe.
     """)
 
 # Find name of recipe and how many servings
