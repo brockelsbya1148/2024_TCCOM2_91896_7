@@ -2,7 +2,7 @@
 import pandas
 
 
-# Checks that input is either a float or an integer that is more than zero and less than 100
+# Checks that input is either a float or an integer
 def num_check(question, error, num_type):
     valid = False
     while not valid:
@@ -11,6 +11,7 @@ def num_check(question, error, num_type):
             response = input(question)
             response_num = num_type(response)
 
+            # If the number has too many characters or isn't more than 0, deny
             if len(response) >= 100 or response_num <= 0:
                 print(error)
 
@@ -34,8 +35,7 @@ def not_blank(question):
             return response
 
 
-# checks that users enter a valid response (e.g. yes/ no
-# units) based on a list of options
+# checks that users enter a valid response (e.g. yes/no, units) based on a list of options
 def string_checker(question, valid_responses):
     error = "Please choose a valid answer"
 
@@ -81,13 +81,14 @@ unit_dict = {
 
 # Ask users if they want instructions or not
 instruction_yn = string_checker("Do you want to see the instructions? (yes/no) ", yes_no.keys())
-# y/n conversion
-instruction_yn = yes_no[instruction_yn]
-# print instructions
+instruction_yn = yes_no[instruction_yn]  # y/n conversion
+
+# print instructions if wanted
 if instruction_yn == "yes":
     print("""
     Welcome to the Recipe Cost Calculator!
-    This tool helps you determine the total cost of making a recipe and the cost per serving. Follow these steps to use the calculator:
+    This tool helps you determine the total cost of making a recipe and the cost per serving. Follow these steps to use 
+    the calculator:
 
     1. Enter the Recipe Name:
         - Type the name of your recipe when prompted.
@@ -98,13 +99,15 @@ if instruction_yn == "yes":
     3. Enter Ingredients:
         - For each ingredient:
             - Enter the ingredient name.
-            - Specify the unit of measurement (e.g., grams, cups) or leave it blank if the ingredient has no specific unit (e.g., eggs).
+            - Specify the unit of measurement (e.g., grams, cups) or leave it blank if the ingredient has no specific 
+            unit (e.g., eggs).
             - Provide the amount needed (positive number).
             - To stop entering ingredients, type "xxx" when asked for the ingredient name.
 
     4. Enter Store Prices:
         - For each ingredient:
-            - Specify the unit of measurement in which you buy the ingredient (e.g., grams, kilograms, liters) or leave it blank if there is no specific unit.
+            - Specify the unit of measurement in which you buy the ingredient (e.g., grams, kilograms, liters) or leave
+             it blank if there is no specific unit.
             - Provide the quantity bought from the store (positive number).
             - Enter the cost of that quantity (positive number).
     
@@ -125,7 +128,7 @@ recipe_servings = num_check("How many servings does it make? ", "Please enter a 
 
 # *** Ask user for ingredients ***
 
-# Lists to store ingredients
+# Lists and dictionaries to store ingredients
 ingredients = []
 store_ingredients = []
 prices_list = []
@@ -153,13 +156,19 @@ store_dict = {
 price_dict = {
     "Ingredient": ing_name_list,
     "Amount": ing_amount_list,
+    "Unit": ing_unit_list,
     "Price": ing_cost_list
 }
 
+# Loop to collect ingredients
 while True:
     ing_name = not_blank("\nWhat is the name of your ingredient? (xxx to exit) ")
     if ing_name.lower() == "xxx":
-        break
+        if not ingredients:
+            print("You need at least one ingredient")
+            continue
+        else:
+            break
     ing_unit = string_checker("What unit of measurement does the ingredient use? (or leave blank if no units are "
                               "required, e.g. eggs) ", unit_dict.keys())
     if ing_unit == "":
@@ -169,6 +178,7 @@ while True:
         ing_amount = num_check(f"How many {ing_unit}? ", "Please enter a number more than 0 and less than "
                                                          "100 (no fractions)", float)
 
+    # Find out how much it is to buy the ingredient
     store_unit = string_checker(f"\nWhat unit of measurement do you buy {ing_name} in? (leave blank if no units) ",
                                 unit_dict.keys())
     if store_unit == "":
@@ -180,9 +190,9 @@ while True:
     store_cost = num_check("How much does it cost? $", "Please enter a price", float)
 
     # Remove decimals on whole numbers
-    if store_amount == int(store_amount):
+    if store_amount.is_integer():
         store_amount = int(store_amount)
-    if ing_amount == int(ing_amount):
+    if ing_amount.is_integer():
         ing_amount = int(ing_amount)
 
     # Unit conversion
@@ -210,17 +220,13 @@ ingredient_frame = pandas.DataFrame(ingredient_dict)
 store_price_frame = pandas.DataFrame(store_dict)
 
 # ** Calculate cost per unit of each ingredient in the recipe **
-total_cost = 0  # Make total cost counter
+total_cost = 0  # Initialise total cost counter
 
 for ing_name, ing_amount, ing_unit in ingredients:
     for store_name, store_amount, store_unit, store_cost in store_ingredients:
         if ing_name == store_name:
             price_conv_amount = convert_unit(store_amount, store_unit)
             ing_amount_base = convert_unit(ing_amount, ing_unit)
-
-            # If amount is a whole number, remove decimal place
-            if ing_amount == int(ing_amount):
-                ing_amount = int(ing_amount)
 
             # Calculate
             cost_per_unit = store_cost / price_conv_amount
